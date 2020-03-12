@@ -4,6 +4,7 @@
 , fetchFromGitHub
 , fftwSinglePrec
 , ruby
+, rubyPackages_2_6
 , libffi
 , aubio
 , cmake
@@ -24,14 +25,14 @@ let
 in
 
 mkDerivation rec {
-  version = "3.1.0";
+  version = "3.2.0";
   pname = "sonic-pi";
 
   src = fetchFromGitHub {
     owner = "samaaron";
     repo = "sonic-pi";
     rev = "v${version}";
-    sha256 = "0gi4a73szaa8iz5q1gxgpsnyvhhghcfqm6bfwwxbix4m5csbfgh9";
+    sha256 = "04vxphfbydi7raiip7lghmvr1alydislfj0jsbmghsxw1flca2mw";
   };
 
   buildInputs = [
@@ -42,6 +43,7 @@ mkDerivation rec {
     qscintilla
     qwt
     ruby
+    rubyPackages_2_6.ffi
     libffi
     aubio
     supercollider_single_prec
@@ -52,9 +54,6 @@ mkDerivation rec {
 
   preConfigure = ''
     patchShebangs .
-    substituteInPlace app/gui/qt/mainwindow.cpp \
-      --subst-var-by ruby "${ruby}/bin/ruby" \
-      --subst-var out
   '';
 
   buildPhase = ''
@@ -71,17 +70,18 @@ mkDerivation rec {
     popd
 
     pushd app/gui/qt
-      cp -f ruby_help.tmpl ruby_help.h
-      ../../server/ruby/bin/qt-doc.rb -o ruby_help.h
+      cp -f utils/ruby_help.tmpl utils/ruby_help.h
+      ../../server/ruby/bin/qt-doc.rb -o utils/ruby_help.h
 
       substituteInPlace SonicPi.pro \
         --replace "LIBS += -lrt -lqt5scintilla2" \
                   "LIBS += -lrt -lqscintilla2 -lqwt"
 
       lrelease SonicPi.pro
-      qmake SonicPi.pro
-
-      make
+      cmake -DCMAKE_INSTALL_PREFIX=$out \
+            -B build \
+	    -S .
+      make -C build
     popd
   '';
 
@@ -105,7 +105,5 @@ mkDerivation rec {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Phlogistique kamilchm ];
     platforms = lib.platforms.linux;
-    # sonic-pi depends on ruby 2.4 which we don't support anymore
-    broken = true;
   };
 }
