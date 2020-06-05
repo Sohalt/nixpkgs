@@ -53,6 +53,14 @@ in {
         '';
       };
 
+      openFirewall = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to automatically open the specified port in the firewall.
+        '';
+      };
+
       contextPath = mkOption {
         type = types.path;
         default = "/";
@@ -143,6 +151,8 @@ in {
         locations.${cfg.contextPath}.proxyPass = "http://${cfg.listenAddress}:${toString cfg.port}";
       };
     };
+
+    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [cfg.port];
 
     users.users.airsonic = {
       description = "Airsonic service user";
