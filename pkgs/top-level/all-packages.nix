@@ -4744,8 +4744,6 @@ in
 
   jumpapp = callPackage ../tools/X11/jumpapp {};
 
-  jucipp = callPackage ../applications/editors/jucipp { };
-
   jugglinglab = callPackage ../tools/misc/jugglinglab { };
 
   jupp = callPackage ../applications/editors/jupp { };
