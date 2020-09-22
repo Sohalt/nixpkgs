@@ -1830,6 +1830,8 @@ in {
 
   dopy = callPackage ../development/python-modules/dopy { };
 
+  doreah = callPackage ../development/python-modules/doreah { };
+
   dot2tex = callPackage ../development/python-modules/dot2tex { inherit (pkgs) graphviz; };
 
   dparse = callPackage ../development/python-modules/dparse { };
@@ -3397,6 +3399,8 @@ in {
 
   lektor = callPackage ../development/python-modules/lektor { };
 
+  lesscpy = callPackage ../development/python-modules/lesscpy { };
+
   leveldb = callPackage ../development/python-modules/leveldb { };
 
   lexid = callPackage ../development/python-modules/lexid { };
@@ -3618,6 +3622,8 @@ in {
   loo-py = callPackage ../development/python-modules/loo-py { };
 
   lpod = callPackage ../development/python-modules/lpod { };
+
+  lru-dict = callPackage ../development/python-modules/lru-dict { };
 
   lsi = callPackage ../development/python-modules/lsi { };
 
@@ -4142,6 +4148,8 @@ in {
   nilearn = callPackage ../development/python-modules/nilearn { };
 
   nimfa = callPackage ../development/python-modules/nimfa { };
+
+  nimrodel = callPackage ../development/python-modules/nimrodel { };
 
   nine = callPackage ../development/python-modules/nine { };
 
