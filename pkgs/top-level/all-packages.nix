@@ -19644,6 +19644,8 @@ in
 
   amsn = callPackage ../applications/networking/instant-messengers/amsn { };
 
+  amsynth = callPackage ../applications/audio/amsynth { };
+
   androidStudioPackages = recurseIntoAttrs
     (callPackage ../applications/editors/android-studio {
       buildFHSUserEnv = buildFHSUserEnvBubblewrap;
