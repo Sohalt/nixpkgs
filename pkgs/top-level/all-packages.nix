@@ -25149,7 +25149,8 @@ in
     inherit (darwin.apple_sdk.frameworks) OpenGL OpenAL Carbon Cocoa;
   })
     minetestclient_4 minetestserver_4
-    minetestclient_5 minetestserver_5;
+    minetestclient_5 minetestserver_5
+    mineclone2;
 
   minetest = minetestclient_5;
 
