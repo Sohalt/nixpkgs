@@ -22089,6 +22089,7 @@ in
     mopidy-soundcloud
     mopidy-spotify
     mopidy-spotify-tunigo
+    mopidy-subidy
     mopidy-tunein
     mopidy-youtube;
 
