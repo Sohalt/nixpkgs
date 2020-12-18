@@ -17,12 +17,12 @@ let
   replaceSecret = secretFile: placeholder: optionalString (secretFile != null) ''${pkgs.replace}/bin/replace-literal -ef ${placeholder} "$(cat ${secretFile})"'';
   populateSecrets = writeScript "maloja-pre-start" ''
   cp "${malojaConfFile}" "${dataDir}/settings/settings.ini"
-  ${replaceSecret cfg.lastfm.apiKeyFile "@@LASTFM_API_KEY@@" ${dataDir}/settings/settings.ini}
-  ${replaceSecret cfg.lastfm.apiSecretFile "@@LASTFM_API_SECRET@@" ${dataDir}/settings/settings.ini}
-  ${replaceSecret cfg.fanarttvApiKeyFile "@@FANARTTV_API_KEY@@" ${dataDir}/settings/settings.ini}
-  ${replaceSecret cfg.spotify.apiIdFile "@@SPOTIFY_API_ID@@" ${dataDir}/settings/settings.ini}
-  ${replaceSecret cfg.spotify.apiSecretFile "@@SPOTIFY_API_SECRET@@" ${dataDir}/settings/settings.ini}
-  ${replaceSecret cfg.thumborSecretFile "@@THUMBOR_SECRET@@" ${dataDir}/settings/settings.ini}
+  ${replaceSecret cfg.lastfm.apiKeyFile "@@LASTFM_API_KEY@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.lastfm.apiSecretFile "@@LASTFM_API_SECRET@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.fanarttvApiKeyFile "@@FANARTTV_API_KEY@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.spotify.apiIdFile "@@SPOTIFY_API_ID@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.spotify.apiSecretFile "@@SPOTIFY_API_SECRET@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.thumborSecretFile "@@THUMBOR_SECRET@@" "${dataDir}/settings/settings.ini"}
   '';
 
 
@@ -86,7 +86,7 @@ let
 
       settings = mkOption {
         type = format.type;
-        description = "Maloja configuration. Refer to <link xlink:href="https://github.com/krateng/maloja/blob/master/settings.md"/> for details."
+        description = "Maloja configuration. Refer to <link xlink:href="https://github.com/krateng/maloja/blob/master/settings.md"/> for details.";
       };
 
       nginx = mkOption {
@@ -103,7 +103,7 @@ let
                 proxyPass = "http://${cfg.listenAddress}:${toString cfg.port}";
                 };
               };
-            };
+            }
           )
         );
         default = null;
@@ -118,7 +118,7 @@ let
             With this option, you can customize an nginx virtualHost which already has sensible defaults for Maloja.
             Set this to {} to just enable the virtualHost if you don't need any customization.
             If enabled, then by default, the <option>serverName</option> is
-            <literal>''maloja.''${config.networking.hostName}.''${config.networking.domain}</literal>,
+            <literal>maloja.${config.networking.hostName}.''${config.networking.domain}</literal>,
             SSL is active, and certificates are acquired via ACME.
             If this is set to null (the default), no nginx virtualHost will be configured.
         '';
@@ -134,15 +134,15 @@ let
     cfg.settings.HOST = cfg.listenAddress;
     cfg.settings.SCROBBLE_LASTFM = cfg.lastfm.scrobble;
 
-    cfg.settings.LASTFM_API_KEY = mkIf cfg.lastfm.apiKeyFile != null "@@LASTFM_API_KEY@@";
-    cfg.settings.LASTFM_API_SECRET = mkIf cfg.lastfm.apiSecretFile != null "@@LASTFM_API_SECRET@@";
+    cfg.settings.LASTFM_API_KEY = mkIf (cfg.lastfm.apiKeyFile != null) "@@LASTFM_API_KEY@@";
+    cfg.settings.LASTFM_API_SECRET = mkIf (cfg.lastfm.apiSecretFile != null) "@@LASTFM_API_SECRET@@";
 
-    cfg.settings.FANARTTV_API_KEY = mkIf cfg.fanarttvApiKeyFile != null "@@FANARTTV_API_KEY@@";
+    cfg.settings.FANARTTV_API_KEY = mkIf (cfg.fanarttvApiKeyFile != null) "@@FANARTTV_API_KEY@@";
 
-    cfg.settings.SPOTIFY_API_ID = mkIf cfg.spotify.apiIdFile != null "@@SPOTIFY_API_ID@@";
-    cfg.settings.SPOTIFY_API_SECRET = mkIf cfg.spotify.apiSecretFile != null "@@SPOTIFY_API_SECRET@@";
+    cfg.settings.SPOTIFY_API_ID = mkIf (cfg.spotify.apiIdFile != null) "@@SPOTIFY_API_ID@@";
+    cfg.settings.SPOTIFY_API_SECRET = mkIf (cfg.spotify.apiSecretFile != null) "@@SPOTIFY_API_SECRET@@";
 
-    cfg.settings.THUMBOR_SECRET = mkIf cfg.thumbor.secretFile != null "@@THUMBOR_SECRET@@";
+    cfg.settings.THUMBOR_SECRET = mkIf (cfg.thumbor.secretFile != null) "@@THUMBOR_SECRET@@";
 
     systemd.services.maloja = {
         description = "Maloja Server";
