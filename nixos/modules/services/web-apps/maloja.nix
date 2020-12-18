@@ -3,18 +3,20 @@
 with lib;
 let
   cfg = config.services.maloja;
+
   format = pkgs.formats.ini {};
-  user = "maloja";
-  dataDir = "/var/lib/${user}";
+
+  dataDir = "/var/lib/maloja";
+
   fqdn =
       let
         join = hostName: domain: hostName + optionalString (domain != null) ".${domain}";
       in join config.networking.hostName config.networking.domain;
 
   malojaConfFile = format.generate "settings.ini" cfg.maloja.settings;
-  replaceSecret = secretFile: placeholder: optionalString secretFile != null ''${pkgs.replace}/bin/replace-literal -ef ${placeholder} "$(cat ${secretFile})"'';
-  malojaPreStart = writeScript "maloja-pre-start" ''
-  cp "${malojaConfFile}" /etc/maloja/settings/settings.ini
+  replaceSecret = secretFile: placeholder: optionalString (secretFile != null) ''${pkgs.replace}/bin/replace-literal -ef ${placeholder} "$(cat ${secretFile})"'';
+  populateSecrets = writeScript "maloja-pre-start" ''
+  cp "${malojaConfFile}" "${dataDir}/settings/settings.ini"
   ${replaceSecret cfg.lastfm.apiKeyFile "@@LASTFM_API_KEY@@" ${dataDir}/settings/settings.ini}
   ${replaceSecret cfg.lastfm.apiSecretFile "@@LASTFM_API_SECRET@@" ${dataDir}/settings/settings.ini}
   ${replaceSecret cfg.fanarttvApiKeyFile "@@FANARTTV_API_KEY@@" ${dataDir}/settings/settings.ini}
@@ -146,10 +148,10 @@ let
         description = "Maloja Server";
         serviceConfig = {
           DynamicUser = true;
-          Environment = [ "SKIP_SETUP=true" "MALOJA_DATA_DIR=/var/lib/maloja" ];
+          Environment = [ "SKIP_SETUP=true" "MALOJA_DATA_DIR=${dataDir}" ];
           StateDirectory = "maloja";
-          ExecStartPre = maloja-pre-start;
-          ExecStart = "${pkgs.maloja}/bin/maloja start";
+          ExecStartPre = populateSecrets;
+          ExecStart = "${pkgs.maloja}/bin/maloja run";
         };
 
         wantedBy = [ "multi-user.target" ];
@@ -159,6 +161,5 @@ let
     services.nginx.virtualHosts = mkIf (cfg.nginx != null) {
       "maloja.${fqdn}" = cfg.nginx;
     };
-
   };
 }
