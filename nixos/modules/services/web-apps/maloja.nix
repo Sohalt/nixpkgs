@@ -1,4 +1,4 @@
-{ config, lib, pkgs, writeScript, ... }:
+{ config, lib, pkgs,  ... }:
 
 with lib;
 let
@@ -13,16 +13,16 @@ let
         join = hostName: domain: hostName + optionalString (domain != null) ".${domain}";
       in join config.networking.hostName config.networking.domain;
 
-  malojaConfFile = format.generate "settings.ini" cfg.maloja.settings;
-  replaceSecret = secretFile: placeholder: optionalString (secretFile != null) ''${pkgs.replace}/bin/replace-literal -ef ${placeholder} "$(cat ${secretFile})"'';
-  populateSecrets = writeScript "maloja-pre-start" ''
-  cp "${malojaConfFile}" "${dataDir}/settings/settings.ini"
+  malojaConfFile = format.generate "settings.ini" cfg.settings;
+  replaceSecret = secretFile: placeholder: targetFile: optionalString (secretFile != null) ''${pkgs.replace}/bin/replace-literal -ef ${placeholder} "$(cat ${secretFile})" ${targetFile}'';
+  populateSecrets = pkgs.writeShellScript "maloja-pre-start" ''
+  install -Dm 700 "${malojaConfFile}" "${dataDir}/settings/settings.ini"
   ${replaceSecret cfg.lastfm.apiKeyFile "@@LASTFM_API_KEY@@" "${dataDir}/settings/settings.ini"}
   ${replaceSecret cfg.lastfm.apiSecretFile "@@LASTFM_API_SECRET@@" "${dataDir}/settings/settings.ini"}
-  ${replaceSecret cfg.fanarttvApiKeyFile "@@FANARTTV_API_KEY@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.fanarttv.apiKeyFile "@@FANARTTV_API_KEY@@" "${dataDir}/settings/settings.ini"}
   ${replaceSecret cfg.spotify.apiIdFile "@@SPOTIFY_API_ID@@" "${dataDir}/settings/settings.ini"}
   ${replaceSecret cfg.spotify.apiSecretFile "@@SPOTIFY_API_SECRET@@" "${dataDir}/settings/settings.ini"}
-  ${replaceSecret cfg.thumborSecretFile "@@THUMBOR_SECRET@@" "${dataDir}/settings/settings.ini"}
+  ${replaceSecret cfg.thumbor.secretFile "@@THUMBOR_SECRET@@" "${dataDir}/settings/settings.ini"}
   '';
 
 
@@ -37,7 +37,7 @@ let
       enable = mkEnableOption "maloja";
 
       passwordFile = mkOption {
-        type = types.path;
+        type = types.nullOr types.str;
         description = "A file containing the admin password";
       };
 
@@ -55,31 +55,39 @@ let
       lastfm = {
         scrobble = mkEnableOption "scrobble to last.fm";
         apiKeyFile = mkOption {
-          type = types.path;
+          default = null;
+          type = types.nullOr types.str;
           description = "File with api key for lastfm";
         };
         apiSecretFile = mkOption {
-          type = types.path;
+          default = null;
+          type = types.nullOr types.str;
           description = "File with api secret for lastfm";
         };
       };
-      fanarttvApiKeyFile = mkOption {
-        type = types.path;
+      fanarttv = {
+      apiKeyFile = mkOption {
+        default = null;
+        type = types.nullOr types.str;
         description = "File with api key for fanart.tv";
+      };
       };
       spotify = {
         apiIdFile = mkOption {
-          type = types.path;
+          default = null;
+          type = types.nullOr types.str;
           description = "File with api id for spotify";
         };
         apiSecretFile = mkOption {
-          type = types.path;
+          default = null;
+          type = types.nullOr types.str;
           description = "File with api secret for spotify";
         };
       };
       thumbor = {
         secretFile = mkOption {
-          type = types.path;
+          default = null;
+          type = types.nullOr types.str;
           description = "File with sceret for thumbor server";
         };
       };
@@ -130,19 +138,25 @@ let
   ###### implementation
 
   config = mkIf cfg.enable {
-    cfg.settings.WEB_PORT = cfg.port;
-    cfg.settings.HOST = cfg.listenAddress;
-    cfg.settings.SCROBBLE_LASTFM = cfg.lastfm.scrobble;
+    services.maloja.settings = {
+      HTTP = {
+    WEB_PORT = cfg.port;
+    HOST = cfg.listenAddress;
+      };
+      "Third Party Services" = {
+    SCROBBLE_LASTFM = cfg.lastfm.scrobble;
 
-    cfg.settings.LASTFM_API_KEY = mkIf (cfg.lastfm.apiKeyFile != null) "@@LASTFM_API_KEY@@";
-    cfg.settings.LASTFM_API_SECRET = mkIf (cfg.lastfm.apiSecretFile != null) "@@LASTFM_API_SECRET@@";
+    LASTFM_API_KEY = mkIf (cfg.lastfm.apiKeyFile != null) "@@LASTFM_API_KEY@@";
+    LASTFM_API_SECRET = mkIf (cfg.lastfm.apiSecretFile != null) "@@LASTFM_API_SECRET@@";
 
-    cfg.settings.FANARTTV_API_KEY = mkIf (cfg.fanarttvApiKeyFile != null) "@@FANARTTV_API_KEY@@";
+    FANARTTV_API_KEY = mkIf (cfg.fanarttv.apiKeyFile != null) "@@FANARTTV_API_KEY@@";
 
-    cfg.settings.SPOTIFY_API_ID = mkIf (cfg.spotify.apiIdFile != null) "@@SPOTIFY_API_ID@@";
-    cfg.settings.SPOTIFY_API_SECRET = mkIf (cfg.spotify.apiSecretFile != null) "@@SPOTIFY_API_SECRET@@";
+    SPOTIFY_API_ID = mkIf (cfg.spotify.apiIdFile != null) "@@SPOTIFY_API_ID@@";
+    SPOTIFY_API_SECRET = mkIf (cfg.spotify.apiSecretFile != null) "@@SPOTIFY_API_SECRET@@";
 
-    cfg.settings.THUMBOR_SECRET = mkIf (cfg.thumbor.secretFile != null) "@@THUMBOR_SECRET@@";
+    THUMBOR_SECRET = mkIf (cfg.thumbor.secretFile != null) "@@THUMBOR_SECRET@@";
+      };
+    };
 
     systemd.services.maloja = {
         description = "Maloja Server";
