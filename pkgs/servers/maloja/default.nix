@@ -1,15 +1,22 @@
-{ stdenv, fetchurl, python3Packages }:
+{ stdenv, fetchurl, python3Packages, fetchFromGitHub }:
 
 python3Packages.buildPythonApplication rec {
   pname = "malojaserver";
-  version = "2.9.8";
-  format = "wheel";
+  version = "2020-12-13-git";
 
-  src = python3Packages.fetchPypi {
-    inherit pname version format;
-    python = "py3";
-    sha256 = "264df4194cc47b54eb6d9d953e2e31765a2e3781df0e7e01fc94d532430d86f7";
+  src = fetchFromGitHub {
+    owner = "krateng";
+    repo = "maloja";
+    rev = "ce17f77cfdfc0097aaf155e51491af7d06e9a204";
+    sha256 = "18z8gr9pwxa3j51cpg2clv1cdrmmjd622yviwc1p5vq2h800m9fc";
   };
+
+  #patches = [ ./fixup.patch ];
+
+  doCheck = false;
+  preConfigure = ''
+    export HOME=$(mktemp -d)
+  '';
 
   propagatedBuildInputs = with python3Packages; [
     nimrodel
@@ -19,6 +26,7 @@ python3Packages.buildPythonApplication rec {
     Wand
     htmlmin
     doreah
+    css-html-js-minify
   ];
 
   meta = with stdenv.lib; {

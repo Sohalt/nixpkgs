@@ -162,7 +162,7 @@ let
         description = "Maloja Server";
         serviceConfig = {
           DynamicUser = true;
-          Environment = [ "SKIP_SETUP=true" "MALOJA_DATA_DIR=${dataDir}" ];
+          Environment = [ "MALOJA_SKIP_SETUP=true" "MALOJA_DATA_DIRECTORY=${dataDir}" ];
           StateDirectory = "maloja";
           ExecStartPre = populateSecrets;
           ExecStart = "${pkgs.maloja}/bin/maloja run";
