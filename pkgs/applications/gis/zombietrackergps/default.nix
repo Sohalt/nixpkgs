@@ -15,9 +15,7 @@ mkDerivation rec {
   src = fetchFromGitLab {
     owner = "ldutils-projects";
     repo = pname;
-    # latest revision is not tagged upstream, use commit sha in the meantime
-    #rev = "v_${version}";
-    rev = "cc75d5744965cc6973323f5bb77f00b0b0153dce";
+    rev = "v_${version}";
     sha256 = "sha256-z/LFNRFdQQFxEWyAjcuGezRbTsv8z6Q6fK8NLjP4HNM=";
   };
 
